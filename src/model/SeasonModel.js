@@ -3,48 +3,21 @@ const mongoose = require('mongoose');
 const EpisodeSchema = mongoose.Schema(
 	{
 		seasonNumber: {
-			type: Number	
-		},
-		episodeNumber: {
-			type: Number	
-		},
-		seasonEpisode: {
-			type: 'String',
-			required: true,
-			unique: true
-		},
-		title: {
 			type: String,
-			required: true,
+			unique: true
 		},
 		content: {
 			type: String,
-			required: false,
 		},
-		plot: {
-			type: String,
-		},
-		image: {
-			type: String
-		},
-		imDbRating: {
-			type: String
-		},
-		imDbRatingCount: {
-			type: String
-		},
-		year: {
-			type: String	
-		},
-		released: {
-			type: String
-		},
-		posts: [
+		episodes: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
-				ref: 'Posts',
+				ref: 'Episodes',
 			},
 		],
+		year: { 
+			type: String
+		},
 		upVotes: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
@@ -66,4 +39,4 @@ const EpisodeSchema = mongoose.Schema(
 	}
 );
 
-module.exports = mongoose.model('Episodes', EpisodeSchema);
+module.exports = mongoose.model('Seasons', EpisodeSchema);

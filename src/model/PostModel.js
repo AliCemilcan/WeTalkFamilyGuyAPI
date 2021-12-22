@@ -19,6 +19,21 @@ const PostSchema = mongoose.Schema(
 				ref: 'Comments',
 			},
 		],
+		upVotes: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				unique: true,
+				ref: 'Users',
+			},
+		],
+		downVotes: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				unique: true,
+				ref: 'Users',
+			},
+		],
+		voteScore: { type: Number },
 	},
 	{
 		timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

@@ -22,13 +22,29 @@ const createEpisode = function (episode, post_id) {
 }
 
 router.post('/', async (req, res) => {
+	const existing_episode = await Episodes.exists({
+		seasonEpisode: req.body.seasonEpisode,
+	});
+	if (existing_episode ) {
+		return res.status(400).json({ message: 'Episode Already Exist' });
+	}
 	const episode = new Episodes({
 		title: req.body.title,
-		content: req.body.content,
+		plot:req.body.plot,
+		seasonNumber:req.body.seasonNumber,
+		episodeNumber:req.body.episodeNumber,
+		seasonEpisode:req.body.seasonEpisode,
+		image:req.body.image,
+		imDbRating:req.body.imDbRating,
+		imDbRatingCount:req.body.imDbRatingCount,
+		year:req.body.year,
+		released:req.body.released,
 	});
 
+	console.log("?????")
 	try {
 		const savedEpisode = await episode.save();
+		console.log("succccess")
 		res.json(savedEpisode);
 		console.log(savedEpisode)
 	} catch (err) {

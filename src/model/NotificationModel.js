@@ -23,16 +23,7 @@ const UserSchema = mongoose.Schema({
     },
 	password: {
 		type: String,
-		required: false
-	},
-	googleID:{
-		type: String,
-		required: false,
-		default: null
-	},
-	profileImage:{
-		type: String,
-		requried: false
+		required: true
 	},
 	savedPosts: [
 		{

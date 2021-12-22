@@ -16,6 +16,7 @@ app.options('*', cors())
 const userPosts = require('./src/routes/UserPosts')
 const userComment = require('./src/routes/UserComments')
 const episode = require('./src/routes/Episodes')
+const season = require('./src/routes/Season')
 
 // converting json
 app.use(bodyParser.json());
@@ -24,8 +25,11 @@ app.use(bodyParser.json());
 app.use('/posts', userPosts);
 app.use('/comment', userComment);
 app.use('/episodes', episode);
+app.use('/season', season);
 app.use('/signup', auth.signup);
 app.use('/signin', auth.signin);
+app.use('/googleAuth', auth.googleAuth);
+app.use("/requestResetPassword", auth.resetPasswordRequestController);
 
 
 
