@@ -19,48 +19,100 @@ router.get('/ID', (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-	const user = await User.findOne({ _id: req.body.createdBy });
-	const post = new Post({
-		title: req.body.title,
-		content: req.body.content,
-		createdBy: req.body.createdBy,
-		episodeID: req.body.episodeID,
-		userName: user.userName,
-		upVotes: [],
-		downVotes: [],
-		vodeScore: 0,
-	});
-
+	var user = null
 	try {
+		try {
+			 user = await User.findOne({ _id: req.body.createdBy });
+			
+		} catch (err) {
+			res.status(401).json({ message: 'User Not Found' });
+			
+		}
+		const post = new Post({
+			title: req.body.title,
+			content: req.body.content,
+			createdBy: req.body.createdBy.toString(),
+			episodeID: req.body.episodeID,
+			userName: user.userName,
+			upVotes: [req.body.createdBy],
+			downVotes: [],
+			savedBy:[],
+			voteScore: 0,
+		});
+		// const createdPost = Post.create(post).then(docComment => {
+		// 	console.log("doccccccc", docComment)
+		// }).catch(e => {
+		// 	console.log("ERROR", e)
+		// })
+		//console.log(post, "created post", createdPost)
 		const savedPost = await createPost(post, req.body.episodeID);
 		res.json(savedPost);
+
+	} catch (err) {
+		res.status(401).json({ message: err });
+	}
+});
+
+//Upvote
+router.post('/vote-up', async (req, res) => {
+	if (!req.body.user || !req.body.id) {
+		return res.status(400).send({ message: 'UnAutharized' });
+	}
+
+	try {
+		const upvote_status = await Post.updateOne(
+			{ _id: req.body.id },
+			{
+				$addToSet: { upVotes: req.body.user },
+			},
+			{ upsert: false }
+			
+		)
+		console.log(upvote_status)
+		const message = 'Post Upvoted!';
+		return res.status(200).send({ message });
+		
 	} catch (err) {
 		res.json({ message: err });
 	}
 });
 
-//Upvote
-router.post('/:id/vote-up', async (req, res) => {
+router.post('/save-post', async (req, res) => {
 
 	try {
-		 await Post.updateOne(
-			{ _id: req.body.id },
+		await User.findByIdAndUpdate(
+			{ _id: req.body.user },
 			{
-				$addToSet: { upVotes: req.body.user_id },
+				$push: { savedPosts: req.body.post },
 			},
-			{ upsert: true }
+			{ new: true, useFindAndModify: false }
+		).then(async (data) => { 
+			try {
 			
-		 ).then(data => {
-			const message = 'Downvoted';
-			return res.status(200).send({ message });
+				await Post.updateOne(
+					{ _id: req.body.post },
+					{
+						$addToSet: { savedBy: req.body.user },
+					},
+					{ upsert: false }
+			
+				).then(data => {
+					const message = 'Saved!';
+					return res.status(200).send({ message });
+				});
+			} catch (err) {
+				const message = 'Something went wrong!!';
+				return res.status(401).send({ message });
+			}
 		});
 	} catch (err) {
 		res.json({ message: err });
 	}
 });
-
 router.post('/:id/vote-down', async (req, res) => {
-
+	if (!req.body.user || !req.body.id) {
+		return res.status(400).send({ message: 'UnAutharized' });
+	}
 	try {
 		 await Post.updateOne(
 			{ _id: req.body.id },
@@ -77,9 +129,27 @@ router.post('/:id/vote-down', async (req, res) => {
 		res.json({ message: err });
 	}
 });
+router.post('/user-saved-posts', async (req, res) => {
+	if (!req.body.id) {
+		console.log("REQUEST", req.body.id)
+
+		return res.status(400).send({ message: 'UnAutharized' });
+	}
+	try {
+		const saved_posts = await Post.find(
+			{_id:{$in:req.body.posts}}
+			
+		)
+		return res.status(200).send({ saved_posts: saved_posts });
+
+	} catch (err) {
+		res.json({ message: err });
+	}
+});
 
 const createPost = function(post, episode_id) {
 	return Post.create(post).then((docComment) => {
+		console.log("POST CREAYED", docComment)
 		return Episode.findByIdAndUpdate(
 			{ _id: episode_id },
 			{
@@ -87,7 +157,7 @@ const createPost = function(post, episode_id) {
 			},
 			{ new: true, useFindAndModify: false }
 		);
-	});
+	})
 };
 
 module.exports = router;

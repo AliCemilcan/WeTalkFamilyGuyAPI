@@ -10,7 +10,6 @@ const bcryptSalt = process.env.SECRET;
 const clientURL = process.env.CLIENT_URL;
 
 const requestPasswordReset = async function(email) {
-	console.log('here', email);
 	const user = await User.findOne({ email });
 	if (!user) throw new Error('Email does not exist');
 
@@ -25,17 +24,32 @@ const requestPasswordReset = async function(email) {
 		token: hash,
 		createdAt: Date.now(),
 	}).save();
-	console.log(clientURL);
 	const link = `http://localhost:8080/forgot-password?token=${resetToken}&id=${user._id}`;
-	console.log('here', link);
 	sendEmail(
 		user.email,
-		'Password Reset Request111',
+		'Password Reset Request',
 		{
 			name: user.userName,
 			link: link,
 		},
 		'./requestResetPassword.handlebars'
+	);
+	return link;
+};
+const welcomeUserEmail = async function(email) {
+	const user = await User.findOne({ email });
+	if (!user) throw new Error('Email does not exist');
+
+	//   let token = await Token.findOne({ userId: user._id });
+	//   if (token) await token.deleteOne();
+
+	sendEmail(
+		user.email,
+		'Password Reset Request',
+		{
+			name: user.userName,
+		},
+		'./welcomeEmail.handlebars'
 	);
 	return link;
 };
@@ -80,4 +94,5 @@ const resetPassword = async (userId, token, password) => {
 module.exports = {
 	requestPasswordReset,
 	resetPassword,
+	welcomeUserEmail
 };

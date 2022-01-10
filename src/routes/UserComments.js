@@ -21,23 +21,31 @@ const createComment = function (comment, post_id) {
 }
 
 router.post('/', async (req, res) => {
-	const user = await User.findOne({ _id: req.body.createdBy })
-	const comment = new Comment({
-		text: req.body.text,
-		createdBy: req.body.createdBy,
-		postID: req.body.postID,
-		userName: user.userName
-	});
-	//const user = await User.findOne({ _id: req.body.createdBy })
-//	const current_user = User.find({ _id: (req.body.createdBy) }, {_id: 0, userName: 1})
-	console.log(user)
-
+	var user = null
 	try {
+		try {
+			user = await User.findOne({ _id: req.body.createdBy })
+		} catch (err) {
+			res.status(401).json({ message: 'User Not Found' });
+			return
+		}
+		console.log(user)
+		const comment = new Comment({
+			text: req.body.text,
+			createdBy: req.body.createdBy,
+			postID: req.body.postID,
+			userName: user.userName
+		})
+		console.log(comment)
+		
 		const savedComment = await createComment(comment, req.body.postID);
-		res.json({savedComment, user});
+		res.status(201).json({ message:'Got your comment!' });
+			
 	} catch (err) {
-		res.json({ message: err });
+		console.log(err)
+		res.status(401).json({ message: 'Error Creating Comment' });
 	}
+	
 });
 
 router.get('/', async (req, res) => {

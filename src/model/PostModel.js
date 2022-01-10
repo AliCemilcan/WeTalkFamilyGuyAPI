@@ -33,6 +33,13 @@ const PostSchema = mongoose.Schema(
 				ref: 'Users',
 			},
 		],
+		savedBy: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				unique: true,
+				ref: 'Users',
+			},
+		],
 		voteScore: { type: Number },
 	},
 	{

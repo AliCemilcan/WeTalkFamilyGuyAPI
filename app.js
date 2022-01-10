@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const auth = require('./src/utils/auth');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
 
 
 const app = express();
@@ -10,6 +12,8 @@ require('dotenv/config');
 //you have ability to create routes
 
 app.use(cors());
+app.use(compression());
+app.use(helmet());
 app.options('*', cors())
 
 //MiddleWare
@@ -20,8 +24,7 @@ const season = require('./src/routes/Season')
 
 // converting json
 app.use(bodyParser.json());
-
-// app.use('/posts', auth.protect);
+app.use('/checkAuth', auth.protect);
 app.use('/posts', userPosts);
 app.use('/comment', userComment);
 app.use('/episodes', episode);

@@ -5,8 +5,7 @@ const path = require('path');
 
 const sendEmail = async (email, subject, payload, template) => {
 	try {
-		console.log(email);
-		console.log(process.env.EMAIL_USERNAME);
+	
 		// create reusable transporter object using the default SMTP transport
 		// const transporter = nodemailer.createTransport({
 		// 	//   port: 465,

@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const User = require('../model/UserModel');
-const { requestPasswordReset } = require('../utils/emailService');
+const { requestPasswordReset,welcomeUserEmail } = require('../utils/emailService');
 
 const newToken = (user) => {
-	return jwt.sign({ id: user.id }, process.env.SECRET, {
-		expiresIn: '1800s',
+	return jwt.sign({ user_id: user._id.toString() }, process.env.SECRET, {
+		expiresIn: '10h',
 	});
 };
 
@@ -37,11 +37,16 @@ const signup = async (req, res) => {
 			email: req.body.email,
 			password: req.body.password,
 		});
+		console.log("New User", user);
+
 		const savedUser = await user.save();
+		console.log("Saved User", user);
+
 		const token = newToken(savedUser);
 		const message = 'Welcome ' + req.body.username;
 		return res.status(201).json({ token, savedUser, message });
 	} catch (e) {
+		console.log(e)
 		const message = 'Sorry.. Something went wrong';
 
 		return res
@@ -56,9 +61,8 @@ const googleAuth = async (req, res) => {
 	}
 	try {
 		const existing_user = await User.exists({
-			googleID: req.body.googleID,
+			userName: req.body.username,
 		});
-		
 		if (existing_user) {
 			const user = await User.findOne({ userName: req.body.username })
 				.select('userName')
@@ -74,10 +78,14 @@ const googleAuth = async (req, res) => {
 				profileImage: req.body.profileImage,
 			});
 			const savedUser = await user.save();
+			const requestWelcomeEmail= await welcomeUserEmail(
+				req.body.email
+			);
 			const token = newToken(savedUser);
+			
 			const message = 'Welcome ' + req.body.username;
 			
-			return res.status(201).json({ token, savedUser, message });
+			return res.status(201).json({ savedUser,token, message });
 		}
 	} catch (e) {
 		console.log(e);
@@ -145,38 +153,36 @@ const signin = async (req, res) => {
 const protect = async (req, res, next) => {
 	const bearer = req.headers.authorization;
 
-	console.log(bearer);
 	if (!bearer || !bearer.startsWith('Bearer ')) {
 		return res.status(401).end();
 	}
-
-	const token = bearer.split('Bearer ')[1].trim();
-	console.log(token);
+	const token = bearer.replace(/^Bearer\s+/, "").trim();
 	let payload;
 	try {
 		payload = await verifyToken(token);
 	} catch (e) {
-		console.log('here?');
 		return res.status(401).end();
 	}
-
-	const user = await User.findById(payload.id)
+	const user = await User.findById(payload.user_id)
 		.select('-password')
-		.lean()
 		.exec();
-
 	if (!user) {
 		return res.status(401).end();
+	} else {
+		return res.status(201).send({ user, token});
 	}
-
-	req.user = user;
-	next();
+	// req.user = user;
+	// next();
 };
+
+
+
+
 
 module.exports = {
 	signin,
 	signup,
 	googleAuth,
 	resetPasswordRequestController,
-	protect,
+	protect
 };

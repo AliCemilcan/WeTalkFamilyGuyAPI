@@ -25,10 +25,10 @@ router.post('/', async (req, res) => {
 	const existing_episode = await Episodes.exists({
 		seasonEpisode: req.body.seasonEpisode,
 	});
-	if (existing_episode ) {
+	if (existing_episode) {
 		return res.status(400).json({ message: 'Episode Already Exist' });
 	}
-	const episode = new Episodes({
+	const episode = await new Episodes({
 		title: req.body.title,
 		plot:req.body.plot,
 		seasonNumber:req.body.seasonNumber,
@@ -41,25 +41,71 @@ router.post('/', async (req, res) => {
 		released:req.body.released,
 	});
 
-	console.log("?????")
 	try {
 		const savedEpisode = await episode.save();
-		console.log("succccess")
 		res.json(savedEpisode);
-		console.log(savedEpisode)
 	} catch (err) {
 		res.json({ message: err });
 	}
 });
 
-router.get('/', async (req, res) => {
+// router.get('/', async (req, res) => {
+// 	try {
+// 		if (req.params.seasonNumber) {
+// 			const seasonNumber = req.params.seasonNumber
+// 			const episodes = await Episodes.find( { seasonNumber: seasonNumber });
+// 			console.log("Episode Specific")
+// 			res.json(episodes);
+			
+// 		} else {
+// 			const episodes = await Episodes.find();
+// 			console.log("Episode ALL")
+// 			res.json(episodes);
+// 		}
+// 	} catch (err) {
+// 		res.json({ message: err })
+// 	}
+// });
+router.get('/episode-detail', async (req, res) => {
 	try {
-		const episodes = await Episodes.find();
-		console.log("Episode ALL", episodes)
-		res.json(episodes);
+		if (req.query.seasonNumber && req.query.episodeNumber) {
+			const seasonNumber = req.query.seasonNumber
+			const episodeNumber = req.query.episodeNumber
+			const episodes = await Episodes.find({ seasonNumber: seasonNumber, episodeNumber: episodeNumber }).populate({ 
+				path: 'posts',
+				populate: {
+					path: 'comments',
+					model: 'Comments'
+				} 
+			});
+			// console.log(episodes)
+			res.json({episodes : episodes});
+			
+		} else {
+			const message= "Identify Episode and Season"
+			res.json({ message: message });
+		}
 	} catch (err) {
 		res.json({ message: err })
 	}
 });
+router.get('/:seasonNumber', async (req, res) => {
+	try {
+		if (req.params.seasonNumber) {
+			const seasonNumber = req.params.seasonNumber
+			const episodes = await Episodes.find( { seasonNumber: seasonNumber }).sort({ episodeNumber: 1 });
+			// console.log(episodes)
+			res.json({episodes : episodes});
+			
+		} else {
+			const message= "Add Episode Number"
+			res.json({ message: message });
+		}
+	} catch (err) {
+		res.json({ message: err })
+	}
+});
+
+
 
 module.exports = router
