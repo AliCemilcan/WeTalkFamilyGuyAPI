@@ -109,6 +109,35 @@ router.post('/save-post', async (req, res) => {
 		res.json({ message: err });
 	}
 });
+router.post('/remove-post', async (req, res) => {
+
+	try {
+		await User.findByIdAndUpdate(
+			{ _id: req.body.user },
+			{
+				$push: { savedPosts: req.body.post },
+			},
+			{ new: true, useFindAndModify: false }
+		).then(async (data) => { 
+			try {
+			
+				await Post.remove(
+					{ _id: req.body.post }
+			
+				).then(data => {
+					const message = 'Removed!';
+					return res.status(200).send({ message });
+				});
+			} catch (err) {
+				const message = 'Something went wrong!!';
+				return res.status(401).send({ message });
+			}
+		});
+	} catch (err) {
+		res.json({ message: err });
+	}
+});
+
 router.post('/:id/vote-down', async (req, res) => {
 	if (!req.body.user || !req.body.id) {
 		return res.status(400).send({ message: 'UnAutharized' });
@@ -137,9 +166,8 @@ router.post('/user-saved-posts', async (req, res) => {
 	}
 	try {
 		const saved_posts = await Post.find(
-			{_id:{$in:req.body.posts}}
-			
-		)
+			{ _id: { $in: req.body.posts } }			
+		).populate('comments').populate('userName');
 		return res.status(200).send({ saved_posts: saved_posts });
 
 	} catch (err) {

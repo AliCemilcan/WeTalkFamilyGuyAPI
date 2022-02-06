@@ -5,10 +5,8 @@ const Comment = require('../model/CommentModel');
 const Post = require('../model/PostModel');
 const User = require('../model/UserModel');
 
-const createComment = function (comment, post_id) {
-//	console.log(comment)
+const createComment = async function (comment, post_id) {
 	return Comment.create(comment).then(docComment => {
-	//	console.log(docComment._id)
 		return Post.findByIdAndUpdate(
 			{ _id: post_id },
 			{
@@ -18,6 +16,18 @@ const createComment = function (comment, post_id) {
 		);
 	})
 
+}
+const insertChildComment = async function (comment, post_id) {
+	return Comment.findByIdAndUpdate(
+		{ _id: post_id },
+		{
+			$push: { childComments: comment._id },
+		},
+		{
+			new: true,
+			useFindAndModify: false
+		}
+	);
 }
 
 router.post('/', async (req, res) => {
@@ -29,16 +39,24 @@ router.post('/', async (req, res) => {
 			res.status(401).json({ message: 'User Not Found' });
 			return
 		}
-		console.log(user)
-		const comment = new Comment({
+		let comment_to_insert = {
 			text: req.body.text,
 			createdBy: req.body.createdBy,
-			postID: req.body.postID,
 			userName: user.userName
-		})
-		console.log(comment)
+		}
+		if (req.body.postID) {
+			comment_to_insert.postID = req.body.postID
+		}
+		if (req.body.parentID) {
+			comment_to_insert.parentID = req.body.parentID
+		}
+		const comment = new Comment(comment_to_insert)
 		
-		const savedComment = await createComment(comment, req.body.postID);
+		const savedComment = await createComment(comment, req.body.postID || req.body.parentID);
+		if (req.body.parentID) {
+			const insertComment = await insertChildComment(comment, req.body.parentID);
+
+		}
 		res.status(201).json({ message:'Got your comment!' });
 			
 	} catch (err) {
@@ -48,13 +66,21 @@ router.post('/', async (req, res) => {
 	
 });
 
-router.get('/', async (req, res) => {
-	console.log("??????????")
+router.get('/:commentID', async (req, res) => {
 	try {
-		const coments = await Comment.find();
-		res.json(coments);
+		if (req.params.commentID) {
+			const childComments = await Comment.findOne({ _id: req.params.commentID }).populate({
+				path: 'childComments'
+			})
+			res.json({child_comments : childComments});
+			
+		} else {
+			res.status(401).json({ message: 'Error Creating Comment' });
+
+		}
 	} catch (err) {
-		res.json({ message: err })
+		res.status(401).json({ message: 'Error Creating Comment' });
+
 	}
 });
 

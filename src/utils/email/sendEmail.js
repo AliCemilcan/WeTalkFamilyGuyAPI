@@ -39,6 +39,7 @@ const sendEmail = async (email, subject, payload, template) => {
 
 		// Send email
 		transporter.sendMail(options(), (error, info) => {
+			console.log(error, info)
 			if (error) {
 				return error;
 			} else {

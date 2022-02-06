@@ -30,6 +30,19 @@ const CommentSchema = mongoose.Schema(
 			},
 		],
 		voteScore: { type: Number },
+		parentID: {
+			type: mongoose.SchemaTypes.ObjectId,
+			ref: 'Comments',
+			required: false,
+		},
+		childComments: [
+			{
+			type: mongoose.SchemaTypes.ObjectId,
+			ref: 'Comments',
+			required: false,
+		}
+	]	
+		
 	},
 	{
 		timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

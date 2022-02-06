@@ -57,6 +57,33 @@ UserSchema.pre('save', function(next) {
 		next();
 	});
 });
+// UserSchema.pre('update', function(next) {
+// 	if (!this.isModified('password')) {
+// 		return next();
+// 	}
+
+// 	bcrypt.hash(this.password, 8, (err, hash) => {
+// 		if (err) {
+// 			return next(err);
+// 		}
+
+// 		this.password = hash;
+// 		next();
+// 	});
+// });
+// UserSchema.pre('updateOne', function(next) {
+// 	if (!this.isModified('password')) {
+// 		return next();
+// 	}
+// 	bcrypt.hash(this.password, 8, (err, hash) => {
+// 		if (err) {
+// 			return next(err);
+// 		}
+
+// 		this.password = hash;
+// 		next();
+// 	});
+// });
 
 UserSchema.methods.checkPassword = function(password) {
 	const passwordHash = this.password;

@@ -45,13 +45,13 @@ const welcomeUserEmail = async function(email) {
 
 	sendEmail(
 		user.email,
-		'Password Reset Request',
+		'Welcome to WeTalkFamilyGuy',
 		{
 			name: user.userName,
 		},
 		'./welcomeEmail.handlebars'
 	);
-	return link;
+	return true;
 };
 
 const resetPassword = async (userId, token, password) => {
@@ -72,7 +72,7 @@ const resetPassword = async (userId, token, password) => {
 	await User.updateOne(
 		{ _id: userId },
 		{ $set: { password: hash } },
-		{ new: true }
+		{ new: false }
 	);
 
 	const user = await User.findById({ _id: userId });
@@ -90,6 +90,7 @@ const resetPassword = async (userId, token, password) => {
 
 	return true;
 };
+
 
 module.exports = {
 	requestPasswordReset,
