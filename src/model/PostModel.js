@@ -41,6 +41,8 @@ const PostSchema = mongoose.Schema(
 			},
 		],
 		voteScore: { type: Number },
+		seasonNumber: { type: Number },
+		episodeNumber: { type: Number }
 	},
 	{
 		timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

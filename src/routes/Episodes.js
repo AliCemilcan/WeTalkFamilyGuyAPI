@@ -93,9 +93,10 @@ router.get('/:seasonNumber', async (req, res) => {
 	try {
 		if (req.params.seasonNumber) {
 			const seasonNumber = req.params.seasonNumber
-			const episodes = await Episodes.find( { seasonNumber: seasonNumber }).sort({ episodeNumber: 1 });
+			const episodes = await Episodes.find({ seasonNumber: seasonNumber }).sort({ episodeNumber: 1 });
+			const episode_posts = await Post.find({seasonNumber: seasonNumber})
 			// console.log(episodes)
-			res.json({episodes : episodes});
+			res.json({episodes : episodes, hot_topics: episode_posts});
 			
 		} else {
 			const message= "Add Episode Number"

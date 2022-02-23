@@ -38,6 +38,8 @@ router.post('/', async (req, res) => {
 			downVotes: [],
 			savedBy:[],
 			voteScore: 0,
+			seasonNumber: req.body.seasonNumber,
+			episodeNumber: req.body.episodeNumber
 		});
 		// const createdPost = Post.create(post).then(docComment => {
 		// 	console.log("doccccccc", docComment)
@@ -46,7 +48,8 @@ router.post('/', async (req, res) => {
 		// })
 		//console.log(post, "created post", createdPost)
 		const savedPost = await createPost(post, req.body.episodeID);
-		res.json(savedPost);
+		const message = 'Post Created!';
+		return res.status(200).send({ message });
 
 	} catch (err) {
 		res.status(401).json({ message: err });
